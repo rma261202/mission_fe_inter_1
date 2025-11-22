@@ -1,0 +1,72 @@
+/* === 1. RESET & GLOBAL === */
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { background-color: #121212; color: white; font-family: 'Arial', sans-serif; overflow-x: hidden; }
+.container { width: 100%; max-width: 1200px; margin: 0 auto; padding: 0 20px; }
+
+/* === 2. COMPONENTS UTILITY === */
+.input-group { margin-bottom: 20px; text-align: left; }
+.input-label { display: block; margin-bottom: 8px; font-weight: bold; color: white; font-size: 14px; }
+.form-input { width: 100%; padding: 14px 20px; background-color: #1e1e1e; border: 1px solid #333; border-radius: 30px; color: white; outline: none; transition: 0.3s; }
+.form-input:focus { border-color: #334ad8; }
+.btn { padding: 12px 24px; border-radius: 30px; border: none; cursor: pointer; font-weight: bold; transition: 0.3s; display: inline-block; text-align: center; }
+.btn-primary { background-color: #334ad8; color: white; } 
+.btn-secondary { background-color: transparent; border: 1px solid #555; color: white; }
+.btn-full { width: 100%; padding: 14px; margin-top: 10px; }
+
+/* Background Login dari Folder images */
+.auth-container { min-height: 100vh; background-image: url('/images/login-bg.jpg'); background-size: cover; background-position: center; display: flex; justify-content: center; align-items: center; padding: 20px; }
+.auth-card { position: relative; background-color: rgba(0, 0, 0, 0.85); padding: 40px; border-radius: 20px; width: 100%; max-width: 400px; text-align: center; box-shadow: 0 0 20px rgba(0,0,0,0.5); }
+
+/* === 3. HOMEPAGE LAYOUT === */
+.navbar { display: flex; justify-content: space-between; padding: 20px 40px; background: #121212; align-items: center; position: sticky; top: 0; z-index: 50; }
+.nav-left { display: flex; gap: 40px; align-items: center; }
+.nav-brand { font-size: 24px; font-weight: 900; letter-spacing: 1px; }
+.nav-menu-desktop { display: flex; gap: 20px; } 
+.nav-menu-desktop a { color: #ccc; text-decoration: none; font-size: 14px; transition: 0.3s; }
+.nav-menu-desktop a:hover { color: white; }
+.nav-right { display: flex; align-items: center; gap: 20px; }
+/* Elemen Mobile (Sembunyi di desktop) */
+.nav-hamburger, .nav-search-icon { display: none; cursor: pointer; } 
+
+/* Hero Section */
+.hero { height: 80vh; background-size: cover; display: flex; align-items: flex-end; padding: 60px 40px; position: relative; }
+.hero-content { max-width: 600px; z-index: 2; }
+.hero-title { font-size: 48px; margin-bottom: 15px; font-weight: bold; text-transform: uppercase; }
+.hero-overlay { position: absolute; top:0; left:0; right:0; bottom:0; background: linear-gradient(to top, #121212 10%, transparent); }
+
+/* === 4. MOVIE CARD STYLES === */
+.movie-section { padding: 20px 40px; margin-bottom: 20px; }
+.section-title { margin-bottom: 20px; font-size: 20px; font-weight: bold; }
+.movie-row { display: flex; gap: 15px; overflow-x: auto; padding-bottom: 20px; scrollbar-width: none; }
+.movie-row::-webkit-scrollbar { display: none; }
+
+.movie-card { flex: 0 0 auto; transition: transform 0.3s; cursor: pointer; position: relative; }
+.movie-card:hover { transform: scale(1.05); z-index: 2; }
+.movie-card img { border-radius: 10px; object-fit: cover; width: 100%; display: block; }
+
+/* Tipe 1: Poster Tegak */
+.movie-card.portrait { width: 200px; }
+.movie-card.portrait img { height: 300px; }
+
+/* Tipe 2: Poster Lebar (Wide) */
+.movie-card.wide { width: 320px; }
+.movie-card.wide img { height: 180px; opacity: 0.8; }
+.movie-info-overlay { position: absolute; bottom: 15px; left: 15px; text-shadow: 2px 2px 4px rgba(0,0,0,0.9); pointer-events: none; }
+.movie-title { font-weight: bold; font-size: 16px; margin-bottom: 5px; }
+.movie-rating { font-size: 12px; color: #ddd; }
+
+/* === 5. RESPONSIF (MOBILE) === */
+@media (max-width: 768px) {
+  .navbar { padding: 15px 20px; }
+  .nav-menu-desktop { display: none; } /* Menu Teks Hilang */
+  .nav-hamburger, .nav-search-icon { display: block; } /* Hamburger Muncul */
+  
+  .hero { height: 60vh; padding: 40px 20px; }
+  .hero-title { font-size: 32px; }
+  
+  .movie-section { padding: 20px; }
+  .movie-card.portrait { width: 140px; }
+  .movie-card.portrait img { height: 210px; }
+  .movie-card.wide { width: 240px; }
+  .movie-card.wide img { height: 135px; }
+}
