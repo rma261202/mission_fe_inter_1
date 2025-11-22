@@ -1,12 +1,14 @@
-import React from 'react';
+import React, { useState } from 'react'; // <--- Import useState
 import { useNavigate } from 'react-router-dom';
 
 const HomePage = () => {
   const navigate = useNavigate();
+  
+  // LOGIC SAKLAR MENU (Buka/Tutup)
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
 
-  // --- DATA FILM (Sesuai Aset Gambar Kamu) ---
+  // --- DATA FILM ---
   const continueWatchingData = [
-    // Perhatikan: Saya ganti jadi .png karena file kamu formatnya PNG
     { id: 101, title: "Don't Look Up", rating: "4.5/5", poster: "/images/wide-dont-look-up.png" },
     { id: 102, title: "Blue Lock", rating: "4.2/5", poster: "/images/wide-blue-lock.jpg" },
     { id: 103, title: "A Man Called Otto", rating: "4.0/5", poster: "/images/wide-otto.jpg" },
@@ -33,7 +35,6 @@ const HomePage = () => {
       <div className="navbar">
         <div className="nav-left">
             <div className="nav-brand">CHILL</div>
-            {/* Menu Desktop (Hilang di HP) */}
             <div className="nav-menu-desktop" style={{marginLeft:'40px'}}>
                 <a href="#">Series</a>
                 <a href="#">Film</a>
@@ -42,17 +43,26 @@ const HomePage = () => {
         </div>
         
         <div className="nav-right">
-            {/* Ikon Search (Muncul di HP) */}
             <svg className="nav-search-icon" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
             
-            {/* Avatar User */}
             <div onClick={() => navigate('/login')} style={{width:'35px', height:'35px', borderRadius:'50%', background:'#333', cursor:'pointer', overflow:'hidden'}}>
                 <img src="https://i.pravatar.cc/150?img=12" alt="User" style={{width:'100%'}}/>
             </div>
 
-            {/* Ikon Hamburger (Muncul di HP) */}
-            <svg className="nav-hamburger" xmlns="http://www.w3.org/2000/svg" width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="3" y1="12" x2="21" y2="12"></line><line x1="3" y1="6" x2="21" y2="6"></line><line x1="3" y1="18" x2="21" y2="18"></line></svg>
+            {/* TOMBOL HAMBURGER DENGAN SAKLAR CLICK */}
+            <div onClick={() => setIsMenuOpen(!isMenuOpen)} style={{cursor: 'pointer'}}>
+                <svg className="nav-hamburger" xmlns="http://www.w3.org/2000/svg" width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="3" y1="12" x2="21" y2="12"></line><line x1="3" y1="6" x2="21" y2="6"></line><line x1="3" y1="18" x2="21" y2="18"></line></svg>
+            </div>
         </div>
+
+        {/* MENU DROPDOWN (HANYA MUNCUL JIKA SAKLAR ON) */}
+        {isMenuOpen && (
+            <div className="mobile-menu-dropdown">
+                <a href="#">Series</a>
+                <a href="#">Film</a>
+                <a href="#">Daftar Saya</a>
+            </div>
+        )}
       </div>
 
       {/* HERO SECTION */}
@@ -69,7 +79,7 @@ const HomePage = () => {
          </div>
       </div>
 
-      {/* SECTION 1: Melanjutkan Tonton (WIDE) */}
+      {/* SECTION 1 */}
       <div className="movie-section">
         <h3 className="section-title">Melanjutkan Tonton Film</h3>
         <div className="movie-row">
@@ -85,7 +95,7 @@ const HomePage = () => {
         </div>
       </div>
 
-      {/* SECTION 2: Trending (PORTRAIT) */}
+      {/* SECTION 2 */}
       <div className="movie-section">
         <h3 className="section-title">Film Trending</h3>
         <div className="movie-row">
@@ -97,7 +107,7 @@ const HomePage = () => {
         </div>
       </div>
       
-      {/* SECTION 3: Rilis Baru (PORTRAIT) */}
+      {/* SECTION 3 */}
       <div className="movie-section">
         <h3 className="section-title">Rilis Baru</h3>
         <div className="movie-row">
