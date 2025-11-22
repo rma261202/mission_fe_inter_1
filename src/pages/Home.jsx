@@ -1,13 +1,12 @@
-import React, { useState } from 'react'; // <--- Import useState
+import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import Footer from '../components/Footer'; // <--- 1. IMPORT INI
 
 const HomePage = () => {
   const navigate = useNavigate();
-  
-  // LOGIC SAKLAR MENU (Buka/Tutup)
   const [isMenuOpen, setIsMenuOpen] = useState(false);
 
-  // --- DATA FILM ---
+  // --- DATA FILM (Sesuai Aset Gambar Kamu) ---
   const continueWatchingData = [
     { id: 101, title: "Don't Look Up", rating: "4.5/5", poster: "/images/wide-dont-look-up.png" },
     { id: 102, title: "Blue Lock", rating: "4.2/5", poster: "/images/wide-blue-lock.jpg" },
@@ -49,13 +48,11 @@ const HomePage = () => {
                 <img src="https://i.pravatar.cc/150?img=12" alt="User" style={{width:'100%'}}/>
             </div>
 
-            {/* TOMBOL HAMBURGER DENGAN SAKLAR CLICK */}
             <div onClick={() => setIsMenuOpen(!isMenuOpen)} style={{cursor: 'pointer'}}>
                 <svg className="nav-hamburger" xmlns="http://www.w3.org/2000/svg" width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="3" y1="12" x2="21" y2="12"></line><line x1="3" y1="6" x2="21" y2="6"></line><line x1="3" y1="18" x2="21" y2="18"></line></svg>
             </div>
         </div>
 
-        {/* MENU DROPDOWN (HANYA MUNCUL JIKA SAKLAR ON) */}
         {isMenuOpen && (
             <div className="mobile-menu-dropdown">
                 <a href="#">Series</a>
@@ -79,7 +76,7 @@ const HomePage = () => {
          </div>
       </div>
 
-      {/* SECTION 1 */}
+      {/* SECTIONS FILM */}
       <div className="movie-section">
         <h3 className="section-title">Melanjutkan Tonton Film</h3>
         <div className="movie-row">
@@ -95,7 +92,6 @@ const HomePage = () => {
         </div>
       </div>
 
-      {/* SECTION 2 */}
       <div className="movie-section">
         <h3 className="section-title">Film Trending</h3>
         <div className="movie-row">
@@ -107,7 +103,6 @@ const HomePage = () => {
         </div>
       </div>
       
-      {/* SECTION 3 */}
       <div className="movie-section">
         <h3 className="section-title">Rilis Baru</h3>
         <div className="movie-row">
@@ -118,6 +113,10 @@ const HomePage = () => {
             ))}
         </div>
       </div>
+
+      {/* PASANG FOOTER DI SINI */}
+      <Footer />  {/* <--- 2. TEMPEL DI SINI */}
+
     </div>
   );
 };

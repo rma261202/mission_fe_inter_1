@@ -95,3 +95,50 @@ body { background-color: #121212; color: white; font-family: 'Arial', sans-serif
 .mobile-menu-dropdown a:hover {
   color: #334ad8;
 }
+
+/* FOOTER STYLE */
+.footer-container {
+  background-color: #0a0a0a; /* Lebih gelap dari body */
+  padding: 40px 20px;
+  margin-top: 40px;
+  border-top: 1px solid #222;
+}
+.footer-content {
+  max-width: 1200px;
+  margin: 0 auto;
+  display: flex;
+  justify-content: space-between;
+  flex-wrap: wrap; /* Biar responsif di HP */
+  gap: 30px;
+}
+.footer-links {
+  display: flex;
+  gap: 50px;
+}
+.footer-column h4 {
+  margin-bottom: 15px;
+  font-size: 16px;
+}
+.footer-column a {
+  display: block;
+  color: #888;
+  text-decoration: none;
+  margin-bottom: 10px;
+  font-size: 14px;
+  transition: 0.3s;
+}
+.footer-column a:hover {
+  color: white;
+}
+
+/* Responsif Footer untuk HP */
+@media (max-width: 768px) {
+  .footer-content {
+    flex-direction: column;
+    text-align: left;
+  }
+  .footer-links {
+    flex-wrap: wrap;
+    gap: 30px;
+  }
+}
