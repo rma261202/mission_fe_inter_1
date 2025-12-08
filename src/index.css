@@ -51,7 +51,15 @@ body { background-color: #121212; color: white; font-family: 'Arial', sans-serif
 /* Tipe 2: Poster Lebar (Wide) */
 .movie-card.wide { width: 320px; }
 .movie-card.wide img { height: 180px; opacity: 0.8; }
-.movie-info-overlay { position: absolute; bottom: 15px; left: 15px; text-shadow: 2px 2px 4px rgba(0,0,0,0.9); pointer-events: none; }
+/* Update bagian ini agar tombol bisa diklik */
+.movie-info-overlay {
+  position: absolute;
+  bottom: 15px;
+  left: 15px;
+  text-shadow: 2px 2px 4px rgba(0,0,0,0.9);
+  pointer-events: auto; /* <--- PENTING: Ganti 'none' jadi 'auto' */
+  z-index: 20; /* Tambah ini biar posisinya paling atas */
+}
 .movie-title { font-weight: bold; font-size: 16px; margin-bottom: 5px; }
 .movie-rating { font-size: 12px; color: #ddd; }
 
