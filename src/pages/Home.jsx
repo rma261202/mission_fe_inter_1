@@ -1,130 +1,200 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Footer from '../components/Footer';
+import api from '../api/axiosInstance';
 
 const HomePage = () => {
   const navigate = useNavigate();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
 
-  // --- STATE 1: DATA FILM UTAMA (Array of Objects) ---
-  // Kita masukkan ke state agar bisa di-update (misal fitur Like)
-  const [movies, setMovies] = useState([
-    { id: 1, title: "Duty After School", image: "/images/duty-after-school.jpg", rating: 4.5, liked: false },
-    { id: 2, title: "Sonic 2", image: "/images/sonic-2.jpg", rating: 4.2, liked: false },
-    { id: 3, title: "The Little Mermaid", image: "/images/little-mermaid.jpg", rating: 3.8, liked: false },
-    { id: 4, title: "Guardians of the Galaxy 3", image: "/images/guardians-3.jpg", rating: 4.8, liked: false },
-    { id: 5, title: "Suzume", image: "/images/suzume.jpg", rating: 4.9, liked: false },
-  ]);
-
-  const [topMovies] = useState([
-    { id: 101, title: "Don't Look Up", image: "/images/wide-dont-look-up.png", rating: 4.5 },
-    { id: 102, title: "Blue Lock", image: "/images/wide-blue-lock.jpg", rating: 4.2 },
-    { id: 103, title: "A Man Called Otto", image: "/images/wide-otto.jpg", rating: 4.0 },
-  ]);
-
-  // --- STATE 2: DAFTAR SAYA (Keranjang Film) ---
-  // Ini untuk menampung film yang dipilih user (Create & Delete)
+  // --- STATE DATA ---
+  const [movies, setMovies] = useState([]);
   const [myList, setMyList] = useState([]);
 
-  // --- FUNGSI 1: CREATE (Tambah ke Daftar Saya) ---
-  const handleAddToList = (movie) => {
-    // Cek apakah film sudah ada di daftar biar gak dobel
-    if (!myList.some(item => item.id === movie.id)) {
-      setMyList([...myList, movie]);
-      alert(`Berhasil menambahkan ${movie.title} ke Daftar Saya!`);
-    } else {
-      alert("Film ini sudah ada di daftar kamu!");
+  // --- STATE MODAL (FORM) ---
+  const [showModal, setShowModal] = useState(false);
+  const [isEditMode, setIsEditMode] = useState(false); // Penanda: Sedang Edit atau Baru?
+  const [currentId, setCurrentId] = useState(null);    // Menyimpan ID film yang sedang diedit
+  
+  const [movieForm, setMovieForm] = useState({
+    title: "",
+    poster: "",
+    rating: "", 
+    year: ""
+  });
+
+  // --- DATA DUMMY (MELANJUTKAN TONTON) ---
+  const [topMovies] = useState([
+    { id: 101, title: "Don't Look Up", image: "/images/wide-dont-look-up.png" },
+    { id: 102, title: "Blue Lock", image: "/images/wide-blue-lock.jpg" },
+    { id: 103, title: "A Man Called Otto", image: "/images/wide-otto.jpg" },
+  ]);
+
+  // --- 1. READ (GET) ---
+  useEffect(() => {
+    fetchMovies();
+  }, []);
+
+  const fetchMovies = async () => {
+    try {
+      const response = await api.get("/movies");
+      setMovies(response.data);
+    } catch (error) {
+      console.error("Error:", error);
     }
   };
 
-  // --- FUNGSI 2: DELETE (Hapus dari Daftar Saya) ---
-  const handleRemoveFromList = (id) => {
-    const updatedList = myList.filter(item => item.id !== id);
-    setMyList(updatedList);
+  // --- 2. DELETE (HAPUS) ---
+  const handleDeleteMovie = async (id) => {
+    if (window.confirm("Yakin hapus permanen?")) {
+      try {
+        await api.delete(`/movies/${id}`);
+        setMovies(prev => prev.filter(m => m.id !== id));
+      } catch (error) {
+        alert("Gagal hapus!");
+      }
+    }
   };
 
-  // --- FUNGSI 3: UPDATE (Fitur Like/Love) ---
-  const handleToggleLike = (id) => {
-    const updatedMovies = movies.map(movie => {
-      if (movie.id === id) {
-        return { ...movie, liked: !movie.liked }; // Ubah status liked jadi kebalikannya
-      }
-      return movie;
-    });
-    setMovies(updatedMovies);
+  // --- SIAPKAN MODE TAMBAH (Reset Form) ---
+  const handleOpenAddModal = () => {
+    setIsEditMode(false);
+    setMovieForm({ title: "", poster: "", rating: "", year: "" });
+    setShowModal(true);
   };
+
+  // --- SIAPKAN MODE EDIT (Isi Form dengan Data Lama) ---
+  const handleOpenEditModal = (movie) => {
+    setIsEditMode(true);
+    setCurrentId(movie.id); // Simpan ID biar tau siapa yang mau diedit
+    setMovieForm({
+      title: movie.title,
+      poster: movie.poster,
+      rating: movie.rating,
+      year: movie.year
+    });
+    setShowModal(true);
+  };
+
+  // --- 3 & 4. CREATE & UPDATE (JURUS GABUNGAN) ---
+  const handleSubmitMovie = async (e) => {
+    e.preventDefault();
+    try {
+      if (isEditMode) {
+        // --- LOGIC UPDATE (PUT) ---
+        // Edit data yang sudah ada berdasarkan ID
+        const response = await api.put(`/movies/${currentId}`, movieForm);
+        
+        // Update layar (Cari film yg ID-nya sama, ganti isinya)
+        setMovies(prev => prev.map(m => m.id === currentId ? response.data : m));
+        alert("Film berhasil diedit!");
+      } else {
+        // --- LOGIC CREATE (POST) ---
+        // Buat data baru
+        const response = await api.post("/movies", movieForm);
+        setMovies([...movies, response.data]);
+        alert("Film berhasil ditambahkan!");
+      }
+
+      // Tutup Modal
+      setShowModal(false);
+    } catch (error) {
+      console.error("Gagal menyimpan:", error);
+      alert("Terjadi kesalahan.");
+    }
+  };
+
+  // --- FITUR LOKAL ---
+  const handleAddToList = (movie) => {
+    if (!myList.some(item => item.id === movie.id)) setMyList([...myList, movie]);
+  };
+  const handleRemoveFromList = (id) => setMyList(myList.filter(item => item.id !== id));
 
   return (
-    <div>
+    <div style={{position: 'relative'}}>
       {/* NAVBAR */}
       <div className="navbar">
         <div className="nav-left">
             <div className="nav-brand">CHILL</div>
             <div className="nav-menu-desktop" style={{marginLeft:'40px'}}>
-                <a href="#">Series</a>
-                <a href="#">Film</a>
-                <a href="#">Daftar Saya</a>
+                <a href="#">Series</a><a href="#">Film</a><a href="#">Daftar Saya</a>
             </div>
         </div>
-        
         <div className="nav-right">
-            <svg className="nav-search-icon" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
-            <div onClick={() => navigate('/login')} style={{width:'35px', height:'35px', borderRadius:'50%', background:'#333', cursor:'pointer', overflow:'hidden'}}>
-                <img src="https://i.pravatar.cc/150?img=12" alt="User" style={{width:'100%'}}/>
+             <div onClick={() => navigate('/login')} style={{cursor:'pointer'}}>
+                <img src="https://i.pravatar.cc/150?img=12" alt="User" style={{width:'35px', borderRadius:'50%'}}/>
             </div>
-            <div onClick={() => setIsMenuOpen(!isMenuOpen)} style={{cursor: 'pointer'}}>
-                <svg className="nav-hamburger" xmlns="http://www.w3.org/2000/svg" width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="3" y1="12" x2="21" y2="12"></line><line x1="3" y1="6" x2="21" y2="6"></line><line x1="3" y1="18" x2="21" y2="18"></line></svg>
-            </div>
+            <div onClick={() => setIsMenuOpen(!isMenuOpen)} style={{cursor: 'pointer', marginLeft: '10px'}}>☰</div>
         </div>
-
-        {isMenuOpen && (
-            <div className="mobile-menu-dropdown">
-                <a href="#">Series</a>
-                <a href="#">Film</a>
-                <a href="#">Daftar Saya</a>
-            </div>
-        )}
+        {isMenuOpen && <div className="mobile-menu-dropdown"><a href="#">Home</a></div>}
       </div>
 
       {/* HERO SECTION */}
       <div className="hero" style={{backgroundImage: 'url("/images/hero-bg.jpg")'}}>
-         <div className="hero-overlay"></div>
          <div className="hero-content">
             <h1 className="hero-title">Duty After School</h1>
-            <p style={{marginBottom:'20px', lineHeight:'1.5'}}>Sebuah benda tak dikenal mengambil alih dunia...</p>
-            <div style={{display:'flex', gap:'10px'}}>
-                <button className="btn btn-primary" style={{borderRadius:'30px', padding:'10px 30px'}}>Mulai</button>
-                <button className="btn btn-secondary" style={{borderRadius:'30px', padding:'10px 30px'}}>Selengkapnya</button>
-                <span style={{border:'1px solid white', padding:'8px', borderRadius:'50%', width:'40px', textAlign:'center'}}>18+</span>
-            </div>
+            <p>Sebuah benda tak dikenal mengambil alih dunia...</p>
+            <button className="btn btn-primary">Mulai</button>
          </div>
       </div>
 
-      {/* SECTION: DAFTAR SAYA (Hanya muncul jika ada isinya) - [READ & DELETE] */}
+      {/* MODAL FORM (BISA UNTUK ADD / EDIT) */}
+      {showModal && (
+        <div style={{
+          position: 'fixed', top: 0, left: 0, right: 0, bottom: 0,
+          backgroundColor: 'rgba(0,0,0,0.8)', zIndex: 1000,
+          display: 'flex', justifyContent: 'center', alignItems: 'center'
+        }}>
+          <div style={{backgroundColor: '#222', padding: '30px', borderRadius: '10px', width: '90%', maxWidth: '400px'}}>
+            <h2 style={{color: 'white', marginBottom: '20px'}}>
+              {isEditMode ? "Edit Film" : "Tambah Film Baru"}
+            </h2>
+            <form onSubmit={handleSubmitMovie} style={{display: 'flex', flexDirection: 'column', gap: '15px'}}>
+              <input 
+                placeholder="Judul Film" 
+                value={movieForm.title}
+                onChange={(e) => setMovieForm({...movieForm, title: e.target.value})}
+                style={{padding: '10px'}} required 
+              />
+              <input 
+                placeholder="Link Gambar (URL)" 
+                value={movieForm.poster}
+                onChange={(e) => setMovieForm({...movieForm, poster: e.target.value})}
+                style={{padding: '10px'}} required 
+              />
+              <input 
+                placeholder="Rating (Contoh: 4.5)" 
+                value={movieForm.rating}
+                onChange={(e) => setMovieForm({...movieForm, rating: e.target.value})}
+                style={{padding: '10px'}} 
+              />
+              <div style={{display: 'flex', gap: '10px', marginTop: '10px'}}>
+                <button type="submit" className="btn-primary" style={{flex: 1, padding: '10px', border:'none', cursor:'pointer'}}>
+                  {isEditMode ? "Update Perubahan" : "Simpan Baru"}
+                </button>
+                <button type="button" onClick={() => setShowModal(false)} style={{flex: 1, padding: '10px', background:'red', color:'white', border:'none', cursor:'pointer'}}>Batal</button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* DAFTAR SAYA */}
       {myList.length > 0 && (
         <div className="movie-section" style={{backgroundColor: '#1a1a1a'}}>
-          <h3 className="section-title">Daftar Saya (My List)</h3>
+          <h3 className="section-title">Daftar Saya</h3>
           <div className="movie-row">
               {myList.map(movie => (
                   <div key={movie.id} className="movie-card portrait">
-                      <img src={movie.image} alt={movie.title} />
-                      <div className="movie-info-overlay">
-                        {/* Tombol Hapus */}
-                        <button 
-                          onClick={() => handleRemoveFromList(movie.id)}
-                          className="btn-circle"
-                          style={{backgroundColor: 'red', border:'none', marginTop:'5px'}}
-                        >
-                          X
-                        </button>
-                      </div>
+                      <img src={movie.poster || movie.image} alt={movie.title} />
+                      <button onClick={() => handleRemoveFromList(movie.id)} className="btn-circle" style={{background:'red'}}>X</button>
                   </div>
               ))}
           </div>
         </div>
       )}
 
-      {/* SECTION: Melanjutkan Tonton */}
+      {/* MELANJUTKAN TONTON (DUMMY) */}
       <div className="movie-section">
         <h3 className="section-title">Melanjutkan Tonton Film</h3>
         <div className="movie-row">
@@ -132,45 +202,58 @@ const HomePage = () => {
                 <div key={movie.id} className="movie-card wide">
                     <img src={movie.image} alt={movie.title} />
                     <div className="movie-info-overlay">
-                        <div className="movie-title">{movie.title}</div>
+                        <span style={{color: 'white', fontWeight: 'bold'}}>{movie.title}</span>
                     </div>
                 </div>
             ))}
         </div>
       </div>
 
-      {/* SECTION: Trending Film (Interaktif) - [CREATE & UPDATE] */}
+      {/* TRENDING (API) - LENGKAP CRUD */}
       <div className="movie-section">
-        <h3 className="section-title">Film Trending (Klik + untuk Add)</h3>
+        <h3 className="section-title">Film Trending (Dari API)</h3>
         <div className="movie-row">
             {movies.map(movie => (
                 <div key={movie.id} className="movie-card portrait">
-                    <img src={movie.image} alt={movie.title} />
-                    <div className="movie-info-overlay" style={{display:'flex', gap:'5px', flexDirection:'column', alignItems:'start'}}>
-                        {/* Tombol Tambah ke Daftar */}
+                    <img src={movie.poster} alt={movie.title} />
+                    <div className="movie-info-overlay">
+                        {/* Tombol Edit (Kuning) */}
                         <button 
-                          onClick={() => handleAddToList(movie)}
-                          className="btn-circle" 
-                          style={{fontSize:'18px', fontWeight:'bold'}}
-                        >
-                          +
-                        </button>
-                        
-                        {/* Tombol Like (Update State) */}
-                        <button 
-                          onClick={() => handleToggleLike(movie.id)}
+                          onClick={() => handleOpenEditModal(movie)}
                           style={{
-                            background: 'transparent', border:'none', cursor:'pointer', 
-                            fontSize:'20px', color: movie.liked ? 'red' : 'white'
+                            background: '#f59e0b', border: 'none', color: 'black', 
+                            padding: '5px 10px', borderRadius: '5px', cursor: 'pointer', fontWeight:'bold', marginBottom:'5px'
                           }}
                         >
-                          ♥
+                          Edit ✏️
                         </button>
+                        
+                        <div style={{display:'flex', gap:'5px', marginTop:'5px'}}>
+                           <button onClick={() => handleAddToList(movie)} className="btn-circle">+</button>
+                           {/* Tombol Hapus (Merah) */}
+                           <button onClick={() => handleDeleteMovie(movie.id)} style={{background:'red', border:'none', color:'white', padding:'5px 10px', borderRadius: '5px', cursor:'pointer'}}>
+                             Hapus 🗑️
+                           </button>
+                        </div>
                     </div>
                 </div>
             ))}
         </div>
       </div>
+
+      {/* TOMBOL FLOATING (+) */}
+      <button 
+        onClick={handleOpenAddModal}
+        style={{
+          position: 'fixed', bottom: '30px', right: '30px',
+          width: '60px', height: '60px', borderRadius: '50%',
+          backgroundColor: '#007bff', color: 'white', fontSize: '30px',
+          border: 'none', cursor: 'pointer', boxShadow: '0 4px 10px rgba(0,0,0,0.5)',
+          zIndex: 999
+        }}
+      >
+        +
+      </button>
 
       <Footer />
     </div>
