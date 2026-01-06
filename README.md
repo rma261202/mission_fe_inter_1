@@ -53,5 +53,3 @@ Data film disimpan secara lokal di file `db.json`. Jika ingin mereset data, cuku
 
 ```
 
-Setelah di-save, jangan lupa kirim ke GitHub:
-
