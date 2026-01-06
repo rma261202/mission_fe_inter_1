@@ -1,0 +1,18 @@
+{
+  "movies": [
+    {
+      "id": "1",
+      "title": "Duty After School",
+      "poster": "/images/duty-after-school.jpg",
+      "rating": "4.5",
+      "year": "2023"
+    },
+    {
+      "title": "Guardians Galaxy 3",
+      "poster": "/images/guardians-3.jpg",
+      "rating": "5",
+      "year": "",
+      "id": "1362"
+    }
+  ]
+}

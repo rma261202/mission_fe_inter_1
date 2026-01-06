@@ -1,20 +1,26 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useDispatch, useSelector } from 'react-redux'; // 1. Import Hooks Redux
+import { setMovies } from '../store/redux/movieSlice';   // 2. Import Action Redux
 import Footer from '../components/Footer';
-import api from '../api/axiosInstance';
+import api from '../api/axiosInstance'; // Pastikan path ini benar sesuai file kamu
 
 const HomePage = () => {
   const navigate = useNavigate();
-  const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const dispatch = useDispatch(); // 3. Siapkan Dispatch
 
-  // --- STATE DATA ---
-  const [movies, setMovies] = useState([]);
-  const [myList, setMyList] = useState([]);
+  // --- GANTI STATE LOKAL DENGAN REDUX ---
+  // HAPUS: const [movies, setMovies] = useState([]);
+  // GANTI JADI:
+  const { movies } = useSelector((state) => state.movies); 
+
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [myList, setMyList] = useState([]); // Biarkan MyList tetap lokal dulu (opsional)
 
   // --- STATE MODAL (FORM) ---
   const [showModal, setShowModal] = useState(false);
-  const [isEditMode, setIsEditMode] = useState(false); // Penanda: Sedang Edit atau Baru?
-  const [currentId, setCurrentId] = useState(null);    // Menyimpan ID film yang sedang diedit
+  const [isEditMode, setIsEditMode] = useState(false);
+  const [currentId, setCurrentId] = useState(null);
   
   const [movieForm, setMovieForm] = useState({
     title: "",
@@ -23,14 +29,14 @@ const HomePage = () => {
     year: ""
   });
 
-  // --- DATA DUMMY (MELANJUTKAN TONTON) ---
+  // --- DATA DUMMY ---
   const [topMovies] = useState([
     { id: 101, title: "Don't Look Up", image: "/images/wide-dont-look-up.png" },
     { id: 102, title: "Blue Lock", image: "/images/wide-blue-lock.jpg" },
     { id: 103, title: "A Man Called Otto", image: "/images/wide-otto.jpg" },
   ]);
 
-  // --- 1. READ (GET) ---
+  // --- 1. READ (GET) - REDUX VERSION ---
   useEffect(() => {
     fetchMovies();
   }, []);
@@ -38,35 +44,39 @@ const HomePage = () => {
   const fetchMovies = async () => {
     try {
       const response = await api.get("/movies");
-      setMovies(response.data);
+      // GANTI: setMovies(response.data) MENJADI:
+      dispatch(setMovies(response.data)); 
+      console.log("Data fetched & dispatched to Redux");
     } catch (error) {
       console.error("Error:", error);
     }
   };
 
-  // --- 2. DELETE (HAPUS) ---
+  // --- 2. DELETE (HAPUS) - REDUX VERSION ---
   const handleDeleteMovie = async (id) => {
     if (window.confirm("Yakin hapus permanen?")) {
       try {
         await api.delete(`/movies/${id}`);
-        setMovies(prev => prev.filter(m => m.id !== id));
+        // Update Redux State secara manual agar tidak perlu fetch ulang
+        const updatedMovies = movies.filter(m => m.id !== id);
+        dispatch(setMovies(updatedMovies));
       } catch (error) {
         alert("Gagal hapus!");
       }
     }
   };
 
-  // --- SIAPKAN MODE TAMBAH (Reset Form) ---
+  // --- SIAPKAN MODE TAMBAH ---
   const handleOpenAddModal = () => {
     setIsEditMode(false);
     setMovieForm({ title: "", poster: "", rating: "", year: "" });
     setShowModal(true);
   };
 
-  // --- SIAPKAN MODE EDIT (Isi Form dengan Data Lama) ---
+  // --- SIAPKAN MODE EDIT ---
   const handleOpenEditModal = (movie) => {
     setIsEditMode(true);
-    setCurrentId(movie.id); // Simpan ID biar tau siapa yang mau diedit
+    setCurrentId(movie.id);
     setMovieForm({
       title: movie.title,
       poster: movie.poster,
@@ -76,27 +86,30 @@ const HomePage = () => {
     setShowModal(true);
   };
 
-  // --- 3 & 4. CREATE & UPDATE (JURUS GABUNGAN) ---
+  // --- 3 & 4. CREATE & UPDATE - REDUX VERSION ---
   const handleSubmitMovie = async (e) => {
     e.preventDefault();
     try {
       if (isEditMode) {
-        // --- LOGIC UPDATE (PUT) ---
-        // Edit data yang sudah ada berdasarkan ID
+        // --- UPDATE (PUT) ---
         const response = await api.put(`/movies/${currentId}`, movieForm);
         
-        // Update layar (Cari film yg ID-nya sama, ganti isinya)
-        setMovies(prev => prev.map(m => m.id === currentId ? response.data : m));
+        // Update Redux: Cari yg id-nya sama, ganti isinya, lalu dispatch setMovies baru
+        const updatedMovies = movies.map(m => m.id === currentId ? response.data : m);
+        dispatch(setMovies(updatedMovies));
+        
         alert("Film berhasil diedit!");
       } else {
-        // --- LOGIC CREATE (POST) ---
-        // Buat data baru
+        // --- CREATE (POST) ---
         const response = await api.post("/movies", movieForm);
-        setMovies([...movies, response.data]);
+        
+        // Update Redux: Ambil array lama, tambah data baru, dispatch
+        const newMovies = [...movies, response.data];
+        dispatch(setMovies(newMovies));
+        
         alert("Film berhasil ditambahkan!");
       }
 
-      // Tutup Modal
       setShowModal(false);
     } catch (error) {
       console.error("Gagal menyimpan:", error);
@@ -138,7 +151,7 @@ const HomePage = () => {
          </div>
       </div>
 
-      {/* MODAL FORM (BISA UNTUK ADD / EDIT) */}
+      {/* MODAL FORM */}
       {showModal && (
         <div style={{
           position: 'fixed', top: 0, left: 0, right: 0, bottom: 0,
@@ -194,7 +207,7 @@ const HomePage = () => {
         </div>
       )}
 
-      {/* MELANJUTKAN TONTON (DUMMY) */}
+      {/* MELANJUTKAN TONTON */}
       <div className="movie-section">
         <h3 className="section-title">Melanjutkan Tonton Film</h3>
         <div className="movie-row">
@@ -209,35 +222,38 @@ const HomePage = () => {
         </div>
       </div>
 
-      {/* TRENDING (API) - LENGKAP CRUD */}
+      {/* TRENDING (API + REDUX) */}
       <div className="movie-section">
-        <h3 className="section-title">Film Trending (Dari API)</h3>
+        <h3 className="section-title">Film Trending (Dari API & Redux)</h3>
         <div className="movie-row">
-            {movies.map(movie => (
-                <div key={movie.id} className="movie-card portrait">
-                    <img src={movie.poster} alt={movie.title} />
-                    <div className="movie-info-overlay">
-                        {/* Tombol Edit (Kuning) */}
-                        <button 
-                          onClick={() => handleOpenEditModal(movie)}
-                          style={{
-                            background: '#f59e0b', border: 'none', color: 'black', 
-                            padding: '5px 10px', borderRadius: '5px', cursor: 'pointer', fontWeight:'bold', marginBottom:'5px'
-                          }}
-                        >
-                          Edit ✏️
-                        </button>
-                        
-                        <div style={{display:'flex', gap:'5px', marginTop:'5px'}}>
-                           <button onClick={() => handleAddToList(movie)} className="btn-circle">+</button>
-                           {/* Tombol Hapus (Merah) */}
-                           <button onClick={() => handleDeleteMovie(movie.id)} style={{background:'red', border:'none', color:'white', padding:'5px 10px', borderRadius: '5px', cursor:'pointer'}}>
-                             Hapus 🗑️
-                           </button>
+            {/* PASTIKAN MOVIES ADA ISINYA SEBELUM DI-MAP */}
+            {movies && movies.length > 0 ? (
+                movies.map(movie => (
+                    <div key={movie.id} className="movie-card portrait">
+                        <img src={movie.poster} alt={movie.title} />
+                        <div className="movie-info-overlay">
+                            <button 
+                              onClick={() => handleOpenEditModal(movie)}
+                              style={{
+                                background: '#f59e0b', border: 'none', color: 'black', 
+                                padding: '5px 10px', borderRadius: '5px', cursor: 'pointer', fontWeight:'bold', marginBottom:'5px'
+                              }}
+                            >
+                              Edit ✏️
+                            </button>
+                            
+                            <div style={{display:'flex', gap:'5px', marginTop:'5px'}}>
+                               <button onClick={() => handleAddToList(movie)} className="btn-circle">+</button>
+                               <button onClick={() => handleDeleteMovie(movie.id)} style={{background:'red', border:'none', color:'white', padding:'5px 10px', borderRadius: '5px', cursor:'pointer'}}>
+                                 Hapus 🗑️
+                               </button>
+                            </div>
                         </div>
                     </div>
-                </div>
-            ))}
+                ))
+            ) : (
+                <p style={{color: 'white', padding: '20px'}}>Loading data atau data kosong...</p>
+            )}
         </div>
       </div>
 
