@@ -51,5 +51,5 @@ Buka browser di: `http://localhost:5173`
 
 Data film disimpan secara lokal di file `db.json`. Jika ingin mereset data, cukup edit file `db.json` kembali ke format awal.
 
-```
+
 
